@@ -25,6 +25,10 @@ const Platillo = sequelize.define('platillo', {
   },
   imagen_url: {
     type: DataTypes.TEXT
+  },
+  descripcion: { // Nuevo campo para la descripción del platillo
+    type: DataTypes.TEXT,
+    allowNull: true
   }
 }, {
   tableName: 'platillos',

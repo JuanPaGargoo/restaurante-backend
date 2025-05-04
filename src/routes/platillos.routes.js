@@ -13,9 +13,9 @@ router.get('/', async (req, res) => {
 // POST: agregar un nuevo platillo con imagen
 router.post('/', upload.single('imagen'), async (req, res) => {
   try {
-    const { nombre, precio, categoria_id, disponible } = req.body;
+    const { nombre, precio, categoria_id, disponible, descripcion } = req.body;
     const imagen_url = req.file ? `/uploads/${req.file.filename}` : null; // Ruta de la imagen
-    const nuevo = await Platillo.create({ nombre, precio, categoria_id, disponible, imagen_url });
+    const nuevo = await Platillo.create({ nombre, precio, categoria_id, disponible, descripcion, imagen_url });
     res.status(201).json(nuevo);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -26,9 +26,9 @@ router.post('/', upload.single('imagen'), async (req, res) => {
 router.put('/:id', upload.single('imagen'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, precio, categoria_id, disponible } = req.body;
+    const { nombre, precio, categoria_id, disponible, descripcion } = req.body;
     const imagen_url = req.file ? `/uploads/${req.file.filename}` : undefined; // Ruta de la imagen
-    const dataToUpdate = { nombre, precio, categoria_id, disponible };
+    const dataToUpdate = { nombre, precio, categoria_id, disponible, descripcion };
     if (imagen_url) dataToUpdate.imagen_url = imagen_url;
 
     const [updated] = await Platillo.update(dataToUpdate, { where: { id } });
@@ -66,7 +66,8 @@ router.get('/categoria/:categoria_id', async (req, res) => {
     if (platillos.length > 0) {
       res.json(platillos);
     } else {
-      res.status(404).json({ error: 'No se encontraron platillos para esta categoría' });
+      // Respuesta amigable si no hay platillos
+      res.status(200).json({ mensaje: 'No hay platillos aún en esta categoría' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
