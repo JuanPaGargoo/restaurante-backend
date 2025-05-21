@@ -1,27 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const Cuenta = require('../models/Cuenta');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 // GET: listar todas las cuentas
 router.get('/', async (req, res) => {
-  const cuentas = await Cuenta.findAll();
-  res.json(cuentas);
+  try {
+    const cuentas = await prisma.cuenta.findMany();
+    res.json(cuentas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // POST: agregar una nueva cuenta
 router.post('/', async (req, res) => {
-  const nuevaCuenta = await Cuenta.create(req.body);
-  res.status(201).json(nuevaCuenta);
+  try {
+    const nuevaCuenta = await prisma.cuenta.create({
+      data: req.body,
+    });
+    res.status(201).json(nuevaCuenta);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // PUT: actualizar una cuenta por ID
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const [updated] = await Cuenta.update(req.body, { where: { id } });
-  if (updated) {
-    const cuentaActualizada = await Cuenta.findByPk(id);
+  try {
+    const cuentaActualizada = await prisma.cuenta.update({
+      where: { id: parseInt(id) },
+      data: req.body,
+    });
     res.json(cuentaActualizada);
-  } else {
+  } catch (error) {
     res.status(404).json({ error: 'Cuenta no encontrada' });
   }
 });
@@ -29,10 +42,10 @@ router.put('/:id', async (req, res) => {
 // DELETE: eliminar una cuenta por ID
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
-  const deleted = await Cuenta.destroy({ where: { id } });
-  if (deleted) {
+  try {
+    await prisma.cuenta.delete({ where: { id: parseInt(id) } });
     res.json({ mensaje: 'Cuenta eliminada' });
-  } else {
+  } catch {
     res.status(404).json({ error: 'Cuenta no encontrada' });
   }
 });

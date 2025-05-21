@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model categorias {
+  id          Int         @id @default(autoincrement())
+  nombre      String      @unique @db.VarChar(255)
+  descripcion String?
+  platillos   platillos[]
+}
+
+model cuentas {
+  id        Int       @id @default(autoincrement())
+  total     Decimal?  @default(0) @db.Decimal(10, 2)
+  pagada    Boolean?  @default(false)
+  creada_en DateTime? @db.Timestamptz(6)
+  mesas     mesas[]
+  pagos     pagos[]
+  pedidos   pedidos[]
+}
+
+model mesas {
+  id        Int      @id @default(autoincrement())
+  estado    String?  @default("libre") @db.VarChar(255)
+  cuenta_id Int?
+  cuentas   cuentas? @relation(fields: [cuenta_id], references: [id])
+}
+
+model pagos {
+  id        Int       @id @default(autoincrement())
+  cuenta_id Int
+  monto     Decimal   @db.Decimal(10, 2)
+  metodo    String?   @db.VarChar(255)
+  fecha     DateTime? @db.Timestamptz(6)
+  cuentas   cuentas   @relation(fields: [cuenta_id], references: [id], onDelete: NoAction)
+}
+
+model pedido_platillo {
+  id          Int       @id @default(autoincrement())
+  pedido_id   Int
+  platillo_id Int
+  cantidad    Int
+  precio_unit Decimal   @db.Decimal(10, 2)
+  pedidos     pedidos   @relation(fields: [pedido_id], references: [id], onDelete: NoAction)
+  platillos   platillos @relation(fields: [platillo_id], references: [id], onDelete: NoAction)
+}
+
+model pedidos {
+  id              Int               @id @default(autoincrement())
+  cuenta_id       Int
+  estado          String?           @default("pendiente") @db.VarChar(255)
+  fecha           DateTime?         @db.Timestamptz(6)
+  pedido_platillo pedido_platillo[]
+  cuentas         cuentas           @relation(fields: [cuenta_id], references: [id], onDelete: NoAction)
+}
+
+model platillos {
+  id              Int               @id @default(autoincrement())
+  nombre          String            @db.VarChar(255)
+  precio          Decimal           @db.Decimal(10, 2)
+  categoria_id    Int
+  disponible      Boolean           @default(true)
+  imagen_url      String?
+  descripcion     String?
+  pedido_platillo pedido_platillo[]
+  categorias      categorias        @relation(fields: [categoria_id], references: [id], onDelete: Cascade)
+}
