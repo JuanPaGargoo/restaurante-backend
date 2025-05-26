@@ -16,10 +16,10 @@ router.get('/', async (req, res) => {
 
 // GET: obtener categorías por nombre
 router.get('/buscar', async (req, res) => {
-  const { nombre } = req.query; // Obtener el parámetro 'nombre' de la consulta
+  const { nombre } = req.query;
   try {
-    const categorias = await prisma.categoria.findMany({
-      where: { nombre: nombre } // Buscar categorías con el nombre exacto
+    const categorias = await prisma.categorias.findMany({
+      where: { nombre: nombre }
     });
     if (categorias.length > 0) {
       res.json(categorias);
@@ -34,7 +34,7 @@ router.get('/buscar', async (req, res) => {
 // POST: agregar una nueva categoría
 router.post('/', async (req, res) => {
   try {
-    const nuevaCategoria = await prisma.categoria.create({
+    const nuevaCategoria = await prisma.categorias.create({
       data: req.body,
     });
     res.status(201).json(nuevaCategoria);
@@ -47,7 +47,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const categoriaActualizada = await prisma.categoria.update({
+    const categoriaActualizada = await prisma.categorias.update({
       where: { id: parseInt(id) },
       data: req.body,
     });
@@ -61,7 +61,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    await prisma.categoria.delete({ where: { id: parseInt(id) } });
+    await prisma.categorias.delete({ where: { id: parseInt(id) } });
     res.json({ mensaje: 'Categoría eliminada' });
   } catch {
     res.status(404).json({ error: 'Categoría no encontrada' });

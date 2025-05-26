@@ -29,42 +29,55 @@ router.get('/categoria/:categoria_id', async (req, res) => {
   }
 });
 
-// POST: agregar un nuevo platillo
-router.post('/', async (req, res) => {
+// POST: agregar un nuevo platillo con imagen
+router.post('/', upload.single('imagen'), async (req, res) => {
   try {
-    const { nombre, precio, categoriaId } = req.body;
+    const { nombre, precio, categoria_id, descripcion } = req.body;
+    const imagen_url = req.file ? `/uploads/${req.file.filename}` : null; // Ruta de la imagen
+
     const nuevoPlatillo = await prisma.platillos.create({
       data: {
         nombre,
-        precio,
-        categoria: {
-          connect: { id: categoriaId },
-        },
+        precio: parseFloat(precio),
+        categoria_id: parseInt(categoria_id),
+        descripcion,
+        imagen_url,
       },
     });
+
     res.status(201).json(nuevoPlatillo);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// PUT: actualizar un platillo por ID
-router.put('/:id', async (req, res) => {
+// PUT: actualizar un platillo por ID (con opción de actualizar imagen)
+router.put('/:id', upload.single('imagen'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, precio, categoriaId } = req.body;
+    const { nombre, precio, categoria_id, descripcion } = req.body;
+    const imagen_url = req.file ? `/uploads/${req.file.filename}` : undefined; // Ruta de la imagen
+
+    const dataToUpdate = {
+      nombre,
+      precio: parseFloat(precio),
+      categoria_id: parseInt(categoria_id),
+      descripcion,
+    };
+
+    if (imagen_url) {
+      dataToUpdate.imagen_url = imagen_url; // Solo actualiza la imagen si se envía
+    }
+
     const platilloActualizado = await prisma.platillos.update({
       where: { id: parseInt(id) },
-      data: {
-        nombre,
-        precio,
-        categoria: {
-          connect: { id: categoriaId },
-        },
-      },
+      data: dataToUpdate,
     });
+
     res.json(platilloActualizado);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 });
