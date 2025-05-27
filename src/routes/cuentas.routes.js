@@ -103,11 +103,13 @@ router.post('/:id/pedido', async (req, res) => {
       data: {
         estado,
         cuenta_id: Number(id),
+        fecha,
         pedido_platillo: {
           create: pedido_platillo.map(pp => ({
             platillo_id: pp.platillo_id,
             cantidad: pp.cantidad,
             precio_unit: pp.precio_unit,
+            
           })),
         },
       },
