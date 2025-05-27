@@ -13,6 +13,24 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET: listar todos los pedidos con sus platillos y detalles del platillo
+router.get('/con-platillos', async (req, res) => {
+  try {
+    const pedidos = await prisma.pedidos.findMany({
+      include: {
+        pedido_platillo: {
+          include: {
+            platillos: true, 
+          },
+        },
+      },
+    });
+    res.json(pedidos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST: agregar un nuevo pedido
 router.post('/', async (req, res) => {
   try {
@@ -36,6 +54,21 @@ router.put('/:id', async (req, res) => {
     res.json(pedidoActualizado);
   } catch (error) {
     res.status(404).json({ error: 'Pedido no encontrado' });
+  }
+});
+
+// PUT :id/estado
+router.put('/:id/estado', async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  try {
+    const pedido = await prisma.pedidos.update({
+      where: { id: Number(id) },
+      data: { estado },
+    });
+    res.json(pedido);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

@@ -173,4 +173,30 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// GET: cuentas con mesas y pedidos (para dashboard)
+router.get('/dashboard', async (req, res) => {
+  try {
+    const cuentas = await prisma.cuentas.findMany({
+      include: {
+        mesas: true,
+        pedidos: true,
+      },
+      orderBy: { creada_en: 'desc' }
+    });
+
+    // Formatea la respuesta para el frontend
+    const result = cuentas.map(cuenta => ({
+      id: cuenta.id,
+      time: cuenta.creada_en ? cuenta.creada_en.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '',
+      table: cuenta.mesas.length > 0 ? cuenta.mesas[0].id : null,
+      status: cuenta.pedidos.length > 0 ? cuenta.pedidos[0].estado : 'Sin pedidos',
+      total: Number(cuenta.total)
+    }));
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
